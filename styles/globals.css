@@ -1,0 +1,37 @@
+
+body{ overflow-y: scroll;
+  background-image: url('https://images.hdqwalls.com/wallpapers/bthumb/tokyo-night-5k-ap.jpg');
+  background-size: cover;
+}
+
+.checkBoxClass{
+  padding-left: 20%;
+}
+
+.checkBoxClass2{
+  padding-left: 15%;
+}
+
+.checkBoxClassA{
+  padding-left: 318px;
+}
+
+.checkBoxClassB{
+  padding-left: 295px;
+}
+
+.checkBoxClassC{
+  padding-left: 338px;
+}
+
+.btnRank{
+  padding-left: 88%;
+}
+
+.loginForm{
+  padding-left: 42%;
+}
+
+.registerForm{
+  padding-left: 42%;
+}
