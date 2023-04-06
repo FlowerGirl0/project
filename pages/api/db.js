@@ -1,15 +1,9 @@
-import nextConnect from 'next-connect';
-import middleware from '../../middleware/database';
+import clientPromise from "../../middleware/database";
 
-const handler = nextConnect();
+async function useDB() {
+  const client = await clientPromise;
+  const db = client.db("app_root_db");
+  return { db };
+}
 
-handler.use(middleware);
-
-handler.get(async (req, res) => {
-
-    let doc = await req.db.collection('users').findOne()
-    console.log(doc);
-    res.json(doc);
-});
-
-export default handler;
+export default useDB;

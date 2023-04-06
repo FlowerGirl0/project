@@ -2,8 +2,13 @@ import Card from 'react-bootstrap/Card'
 import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
+import {apis} from './HTTP_requests'
+import { getSessionToken, saveSessionToken } from '@/utils';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/router';
 
 export default function Account() {
+    const router = useRouter();
     const { register, handleSubmit, setValue } = useForm({
         defaultValues: {
             email: "",
@@ -12,6 +17,11 @@ export default function Account() {
     });
 
     useEffect(() => {
+
+        if(getSessionToken()) {
+            router.push('/')
+        }
+        
         let data = {
             email: "",
             password: ""
@@ -23,7 +33,12 @@ export default function Account() {
     }, []);
 
     function submitForm(data) {
-        console.log(data);
+        apis.login(data).then(res => {
+            saveSessionToken(res.user.token);
+            window?.localStorage.setItem('__user__', JSON.stringify(res.user));
+            toast.success(res?.message || "Success");
+            router.push('/')
+        })
     }
     return (
       <>
@@ -35,7 +50,7 @@ export default function Account() {
                         Email Address:<br/>
                         <input {...register("email")} /><br />
                         Password:<br />
-                        <input {...register("password")} /> <br /><br/>
+                        <input {...register("password")} type="password"/> <br /><br/>
                         <span><Button type="submit">Login</Button></span>
                     </form>
                     </div>
