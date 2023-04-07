@@ -20,12 +20,11 @@ export default async function handler(req, res) {
 
     try {
       // Check if user already exists
-            // Check if user already exists
       const existingUser = await db.collection('users').findOne({ email });
       if (existingUser) {
         return res.status(409).json({ message: 'User already exists' });
       }
-  
+
 
       // Hash password
       const salt = await bcrypt.genSalt(10);
@@ -35,17 +34,18 @@ export default async function handler(req, res) {
         fullName,
         email,
         password: hashedPassword,
-        country,
+        country
       });
 
-      const createdUser = await db.collection('users').insertOne(newUser);
+      await db.collection('users').insertOne(newUser);
 
       res.status(201).json({
         message: "Register successful",
+        code: 200,
         user: {
-          id: createdUser._id,
-          fullName: createdUser.fullName,
-          email: createdUser.email,
+          id: newUser._id,
+          fullName: newUser.fullName,
+          email: newUser.email,
         },
       });
     } catch (err) {

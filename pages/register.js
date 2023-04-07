@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { apis } from "./HTTP_requests";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import { getSessionToken } from "@/utils";
 
 export default function Register() {
   const router = useRouter();
@@ -18,6 +19,10 @@ export default function Register() {
   });
 
   useEffect(() => {
+
+    if(getSessionToken()) {
+      router.push('/')
+  }
     let data = {
       fullName: "",
       email: "",
@@ -33,10 +38,17 @@ export default function Register() {
 
   function submitForm(data) {
     apis.registerUser(data).then((res) => {
-      console.log(res, "register");
-      toast.success(res?.message || "Success");
-      router.push('/login')
-    });
+      if(res?.user) {
+        toast.success(res?.message || "Success");
+        router.push('/login')
+      }else {
+        toast.error(res?.message || "Error");
+      }
+    }).catch(error => {
+      if(error?.response?.data?.message){
+        toast.error(error?.response?.data?.message || "Error");
+      }
+    })
   }
   return (
     <>

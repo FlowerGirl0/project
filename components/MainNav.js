@@ -4,17 +4,19 @@ import Navbar from "react-bootstrap/Navbar";
 import Link from "next/link";
 import Button from "react-bootstrap/Button";
 import { useEffect, useState } from "react";
-import { getCurrentUser, removeSessionToken } from "@/utils";
+import { getSessionToken, removeSessionToken } from "@/utils";
+import { useRouter } from "next/router";
 
 export default function MainNav() {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState();
   useEffect(() => {
-    setCurrentUser(getCurrentUser());
-  }, []);
+    setCurrentUser(getSessionToken());
+  }, [router]);
 
   const handleLogout = () => {
     removeSessionToken();
-    window?.localStorage.remove('__user__');
+    window?.localStorage.removeItem('__user__');
   }
   
   return (
@@ -60,9 +62,9 @@ export default function MainNav() {
                   </Link>
                 </>
               ) : (
-                <Link href="/login" passHref legacyBehavior onClick={handleLogout}>
+                <Link href="/login" passHref legacyBehavior >
                   <Nav.Link>
-                    <Button>Logout</Button>
+                    <Button onClick={handleLogout}>Logout</Button>
                   </Nav.Link>
                 </Link>
               )}

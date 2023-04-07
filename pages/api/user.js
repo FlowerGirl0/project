@@ -14,15 +14,10 @@ export default async function handler(req, res) {
     const { id } = req.params.id;
     const user = await db.collection('users').findOne({ id });
     return res.status(200).json(user);
-}
+  }
 
   if (req.method === "PUT") {
-    const { password, confirmPass, id, oldPass } = req.body;
-
-    // Basic validation
-    if (!password || !confirmPass) {
-      return res.status(400).json({ message: "Please fill all the fields" });
-    }
+    const { password, confirmPass, id, oldPass, amenities } = req.body;
 
     if (password !== confirmPass) {
       return res.status(400).json({ message: "Passwords do not match" });
@@ -35,27 +30,31 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: "User does not exists" });
       }
 
+
       // Create new user
       const updateUser = new User({
         password,
+        ...amenities
       });
 
-      await db.collection('users').updateOne({_id: id}, {$set:updateUser});
+      await db.collection('users').updateOne({ _id: id }, {$set: updateUser});
+      const user = await db.collection('users').findOne({ id });
 
-      res.status(201).json({
+      res.status(200).json({
         message: "User update successful",
+        code: 200,
         user: {
-          oldPass,
-          password,
-          id: existingUser._id,
-          fullName: existingUser.fullName,
-          email: existingUser.email,
-          country: existingUser.country,
+          oldPass: oldPass,
+          id: user?._id,
+          fullName: user?.fullName,
+          email: user?.email,
+          country: user?.country,
+          amenities: amenities
         },
       });
     } catch (err) {
-      console.error("Failed to signup:", err);
-      res.status(500).json({ message: "Failed to signup" });
+      console.error("Failed to update user:", err);
+      res.status(500).json({ message: "Failed to update user" });
     }
   } else {
     res.status(400).json({ message: "Invalid request method" });

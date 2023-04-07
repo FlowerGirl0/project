@@ -7,19 +7,6 @@ const baseUrl =
   process.env.REACT_APP_API_BASE_URL ||
   'http://localhost:3000/api/';
 
-axios.interceptors.response.use(undefined, (error) => {
-  const errors = error?.response?.data;
-  /*
-    toast.error(errors?.error_message || "Something went wrong! please refresh", {
-    color: "#fff"
-    })
-    */
-  throw errors;
-  /*
-    handle errors like 404, 405, 403, and Networking issues
-    */
-});
-
 //extract response payload
 const responseData = (response) => response.data;
 

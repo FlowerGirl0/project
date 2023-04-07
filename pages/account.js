@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
-import {apis} from './HTTP_requests'
+import { apis } from './HTTP_requests'
 
 export default function Account() {
   const { register, handleSubmit, setValue } = useForm({
@@ -28,22 +28,22 @@ export default function Account() {
     updateValues();
   }, []);
 
-  const updateValues = () =>  {
+  const updateValues = () => {
     const user = JSON.parse(window?.localStorage.getItem("__user__"));
     let data = {
       fullName: user?.fullName,
       email: user?.email,
       country: user?.country,
-      oldPass: user?.password,
+      oldPass: user?.oldPass,
       password: "",
       confirmPass: "",
-      elementry: false,
-      secondery: false,
-      hospital: false,
-      gym: false,
-      mall: false,
-      grocery: false,
-      park: false,
+      elementry: user?.amenities?.elementry,
+      secondery: user?.amenities?.secondery,
+      hospital: user?.amenities?.hospital,
+      gym: user?.amenities?.gym,
+      mall: user?.amenities?.mall,
+      grocery: user?.amenities?.grocery,
+      park: user?.amenities?.park,
     };
 
     for (const prop in data) {
@@ -52,13 +52,31 @@ export default function Account() {
   }
 
   function submitForm(data) {
-    apis.updateUser({ password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass }).then((res) => {
-      toast.success(res?.message || "Success");
+    const amenities = {
+      elementry: data?.elementry,
+      secondery: data?.secondery,
+      hospital: data?.hospital,
+      gym: data?.gym,
+      mall: data?.mall,
+      grocery: data?.grocery,
+      park: data?.park,
+    };
 
-      window?.localStorage.setItem('__user__', JSON.stringify(res.user));
-      updateValues()
-    });
+    apis.updateUser({ password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass, amenities }).then((res) => {
+      if (res?.user) {
+        toast.success(res?.message || "Success");
+        window?.localStorage.setItem('__user__', JSON.stringify({...res.user, oldPass: data.password ? data.password : data.oldPass}));
+        updateValues()
+      } else {
+        toast.error(res?.message || "Error");
+      }
+    }).catch(error => {
+      if (error?.response?.data?.message) {
+        toast.error(error?.response?.data?.message || "Error");
+      }
+    })
   }
+
   return (
     <>
       <Card>
@@ -71,14 +89,14 @@ export default function Account() {
             <br />
             <input disabled {...register("fullName")} />
             <span className="checkBoxClass2">
-              <input {...register("oldPass")} />
+              <input {...register("oldPass")} disabled/>
             </span>
             <br />
             Email Address: <span className="checkBoxClassB">New Password:</span>
             <br />
             <input disabled {...register("email")} />{" "}
             <span className="checkBoxClass2">
-              <input {...register("password")} type="password"/>
+              <input {...register("password")} type="password" />
             </span>
             <br />
             Country:{" "}
@@ -86,7 +104,7 @@ export default function Account() {
             <br />
             <input disabled {...register("country")} />{" "}
             <span className="checkBoxClass2">
-              <input {...register("confirmPass")} type="password"/>
+              <input {...register("confirmPass")} type="password" />
             </span>
             <br />
             <br />
