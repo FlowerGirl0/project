@@ -14,7 +14,7 @@ function ResultCard({ amenity, amenityName, result }) {
             dis = amenity?.distance;
         }
 
-        return (dis)
+        return Math.round(dis)
     }
     return (
         <>
