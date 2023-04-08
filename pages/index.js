@@ -162,7 +162,7 @@ export default function Home() {
       );
       return {
         ...address,
-        rank: addresses.length > 1 ? Math.round(rank) : 10
+        rank
       }
     });
     function rankings(arr) {
