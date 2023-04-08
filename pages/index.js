@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import ResultCard from '@/components/ResultCard';
 import { Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import { getSessionToken } from '@/utils';
 
 const KEY = process.env.MAPQUEST_API_KEY || 'ck2OXUAJsF0iz999XGQ62jyXo8AXOVp7';
 
@@ -42,8 +43,16 @@ export default function Home() {
   }, []);
 
   function submitForm(data) {
+    if(!getSessionToken()){
+      toast.info("Please login inorder to use the calculator!")
+      return;
+    }
     const addresses = data.addresses?.split(';').filter(a => a !== '')
     if (data.addresses && addresses?.length) {
+      if (addresses.length > 10) {
+        toast.error("Too much addresses found, addresses should be less than 10")
+        return;
+      }
       L.mapquest.key = KEY;
 
       const inputData = addresses.length > 1 ? addresses : addresses[0]
@@ -146,22 +155,22 @@ export default function Home() {
   };
 
   const calculateRank = (addresses) => {
-    const updatedAddresses = addresses.map((address) => {
+    let updatedAddresses = addresses.map((address) => {
       let rank = 0;
       address.distances.forEach(d =>
         rank += d.amenity.distance
       );
-      rank = (address.distances.length / rank);
-      rank = Math.max(rank, 1); // Restrict rank to a minimum of 1
-      rank = Math.min(rank, 10); // Restrict rank to a maximum of 10
-
-
       return {
         ...address,
         rank: addresses.length > 1 ? Math.round(rank) : 10
       }
     });
+    function rankings(arr) {
+      const sorted = [...arr].sort((a, b) => b.rank - a.rank);
+      return arr.map((x) => { return { ...x, rank: sorted.indexOf(x) + 1 } });
+    };
 
+    updatedAddresses = rankings(updatedAddresses);
     return updatedAddresses.sort((a, b) => b.rank - a.rank);
   };
 

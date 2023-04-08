@@ -1,6 +1,10 @@
+import bcrypt from "bcryptjs";
 import User from "../../models/user";
 import { protect } from "./utils";
 import useDB from './db';
+import mongoose from 'mongoose';
+const { ObjectId } = mongoose.Types;
+
 
 export default async function handler(req, res) {
   const { db } = await useDB();
@@ -12,7 +16,7 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const { id } = req.params.id;
-    const user = await db.collection('users').findOne({ id });
+    const user = await db.collection('users').findOne({ _id: ObjectId(id) });
     return res.status(200).json(user);
   }
 
@@ -25,20 +29,25 @@ export default async function handler(req, res) {
 
     try {
       // find user
-      const existingUser = await db.collection('users').findOne({ id });
+      const existingUser = await db.collection('users').findOne({ _id: ObjectId(id) });
       if (!existingUser) {
         return res.status(400).json({ message: "User does not exists" });
       }
 
 
-      // Create new user
-      const updateUser = new User({
-        password,
-        ...amenities
-      });
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-      await db.collection('users').updateOne({ _id: id }, {$set: updateUser});
-      const user = await db.collection('users').findOne({ id });
+      // update new user
+      const updateUser = {
+        password: hashedPassword,
+        amenities,
+        fullName: 'Fareed Murad 1'
+      }
+
+      await db.collection('users').updateOne({ _id: ObjectId(id) }, { $set: { ...updateUser } });
+      const user = await db.collection('users').findOne({ _id: ObjectId(id) });
 
       res.status(200).json({
         message: "User update successful",

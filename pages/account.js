@@ -1,11 +1,12 @@
 import Card from "react-bootstrap/Card";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
 import { apis } from './HTTP_requests'
 
 export default function Account() {
+  const [user, setUser] = useState();
   const { register, handleSubmit, setValue } = useForm({
     defaultValues: {
       fullName: "",
@@ -49,6 +50,7 @@ export default function Account() {
     for (const prop in data) {
       setValue(prop, data[prop]);
     }
+    setUser(user)
   }
 
   function submitForm(data) {
@@ -62,7 +64,7 @@ export default function Account() {
       park: data?.park,
     };
 
-    apis.updateUser({ password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass, amenities }).then((res) => {
+    apis.updateUser({ id: user.id ,password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass, amenities }).then((res) => {
       if (res?.user) {
         toast.success(res?.message || "Success");
         window?.localStorage.setItem('__user__', JSON.stringify({...res.user, oldPass: data.password ? data.password : data.oldPass}));

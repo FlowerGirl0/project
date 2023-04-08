@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ message: 'Login successful', code: 200, user: {
-      id: user.id,
+      id: user._id,
       fullName: user.fullName,
       email: user.email,
       country: user.country,
