@@ -26,7 +26,7 @@ export default function Home() {
   useEffect(() => {
     const user = JSON.parse(window?.localStorage.getItem("__user__"));
     let data = {
-      addresses: "",
+      addresses: "1337 Brannon Street, Irvine California, United States;Irvine California, United States; California",
       elementry: user?.amenities?.elementry,
       secondery: user?.amenities?.secondery,
       hospital: user?.amenities?.hospital,
@@ -46,7 +46,9 @@ export default function Home() {
     if (data.addresses && addresses?.length) {
       L.mapquest.key = KEY;
 
-      L.mapquest.geocoding().geocode(addresses, handleResponse);
+      const inputData = addresses.length > 1 ? addresses : addresses[0]
+
+      L.mapquest.geocoding().geocode(inputData, handleResponse);
 
       function handleResponse(error, response) {
         var locations = response.results;
@@ -57,7 +59,7 @@ export default function Home() {
         const { elementry, secondery, hospital, gym, mall, grocery, park } = data;
         const amenities = [
           { value: elementry ? "Elementry School" : "" },
-          { value: secondery ? "Secondery School" : "" },
+          { value: secondery ? "Secondary School" : "" },
           { value: hospital ? "Hospital" : "" },
           { value: gym ? "Gym" : "" },
           { value: mall ? "Shopping Mall" : "" },
@@ -72,7 +74,7 @@ export default function Home() {
             const url = `https://www.mapquestapi.com/search/v4/place?location=${lng}, ${lat}&sort=distance&key=${KEY}&q=${amenities[j].value}`;
             const response = await fetch(url);
             const resData = await response.json();
-            if (resData.results.length)
+            if (resData?.results?.length)
               amnt.push({
                 [amenities[j].value]: resData.results,
               });
@@ -86,11 +88,6 @@ export default function Home() {
 
           const distances = calculateDistanceFromAmenities(results);
           const ranking = calculateRank(distances);
-          const final = ranking.map((rank) => rank.address).join(";");
-          // console.log(final);
-          // const amenities = fkeys.join(";");
-          // console.log(ranking);
-
           setResults(ranking)
         });
 
@@ -117,10 +114,10 @@ export default function Home() {
       amnts.forEach((amenity) => {
         const amenityName = Object.keys(amenity)[0];
 
-        amenity[amenityName].forEach(amnt => {
+        const addressedAmenities = amenity[amenityName].map(amnt => {
           const [long2, lat2] = amnt.place.geometry.coordinates;
           // console.log(long2, lat2);
-          distances.push({
+          return {
             amenityName,
             amenity: {
               ...amnt,
@@ -128,13 +125,15 @@ export default function Home() {
                 Math.pow(long2 - long1, 2) + Math.pow(lat2 - lat1, 2)
               )) * 2.230711
             },
-          });
-
+          }
         })
 
+        const nearest = addressedAmenities.reduce((prev, current) => {
+          return (prev.amenity.distance < current.amenity.distance) ? prev : current;
+        });
+        distances.push(nearest);
       });
-      // console.log(distances);
-      // console.log(amnts);
+
       addressesToDistance.push({
         address,
         distances,
@@ -152,15 +151,20 @@ export default function Home() {
       address.distances.forEach(d =>
         rank += d.amenity.distance
       );
+      rank = (address.distances.length / rank);
+      rank = Math.max(rank, 1); // Restrict rank to a minimum of 1
+      rank = Math.min(rank, 10); // Restrict rank to a maximum of 10
+
+
       return {
         ...address,
-        rank: Math.round(rank)
+        rank: addresses.length > 1 ? Math.round(rank) : 10
       }
     });
 
-    return updatedAddresses.sort((a, b) => a.rank - b.rank);
+    return updatedAddresses.sort((a, b) => b.rank - a.rank);
   };
-  console.log(results)
+
   return (
     <>
       <Card>
@@ -185,7 +189,7 @@ export default function Home() {
               <Badge pill bg="success">Rank - {result.rank}</Badge>
             </div>
             <div className='mt-5 d-flex flex-wrap gap-5'>
-              {result.distances.map(item => <ResultCard {...item} result={result}/>)}
+              {result.distances.map(item => <ResultCard {...item} result={result} />)}
             </div>
 
           </>

@@ -9,12 +9,12 @@ function ResultCard({ amenity, amenityName, result }) {
     function getDistance() {
         let dis;
         if (amenity?.distance < 1) {
-            dis = amenity?.distance * 1000;
+            dis = amenity?.distance;
         } else {
             dis = amenity?.distance;
         }
 
-        return Math.round(dis)
+        return (dis)
     }
     return (
         <>
