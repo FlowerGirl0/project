@@ -40,5 +40,6 @@ export const apis = {
   login: (params) => http_requests.post(false, `${baseUrl}login`, params),
   registerUser: (params) => http_requests.post(false, `${baseUrl}register`, params),
   updateUser: (params) => http_requests.put(true, `${baseUrl}user`, params),
-  getAccount: (id) => http_requests.get(false, `${baseUrl}login/${id}`),
+  getAccount: (id) => http_requests.get(false, `${baseUrl}user/${id}`),
+  deleteAccount: (id) => http_requests.delete(false, `${baseUrl}user/${id}`),
 };

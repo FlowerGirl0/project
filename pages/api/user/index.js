@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
-import User from "../../models/user";
-import { protect } from "./utils";
-import useDB from './db';
+import { protect } from "../utils";
+import useDB from '../db';
 import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 
@@ -12,12 +11,6 @@ export default async function handler(req, res) {
     return res
       .status(503)
       .json({ message: "Unauthorized user", unauthorized: true });
-  }
-
-  if (req.method === "GET") {
-    const { id } = req.params.id;
-    const user = await db.collection('users').findOne({ _id: ObjectId(id) });
-    return res.status(200).json(user);
   }
 
   if (req.method === "PUT") {

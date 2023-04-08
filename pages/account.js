@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
 import { apis } from './HTTP_requests'
+import { Modal } from "react-bootstrap";
+import { removeSessionToken } from "@/utils";
+import { useRouter } from "next/router";
+import { Typography } from "@mui/material";
 
 export default function Account() {
+  const router = useRouter();
   const [user, setUser] = useState();
+  const [showModal, setShowModal] = useState(false);
   const { register, handleSubmit, setValue } = useForm({
     defaultValues: {
       fullName: "",
@@ -64,10 +70,10 @@ export default function Account() {
       park: data?.park,
     };
 
-    apis.updateUser({ id: user.id ,password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass, amenities }).then((res) => {
+    apis.updateUser({ id: user.id, password: data.password, confirmPass: data.confirmPass, oldPass: data.oldPass, amenities }).then((res) => {
       if (res?.user) {
         toast.success(res?.message || "Success");
-        window?.localStorage.setItem('__user__', JSON.stringify({...res.user, oldPass: data.password ? data.password : data.oldPass}));
+        window?.localStorage.setItem('__user__', JSON.stringify({ ...res.user, oldPass: data.password ? data.password : data.oldPass }));
         updateValues()
       } else {
         toast.error(res?.message || "Error");
@@ -77,6 +83,23 @@ export default function Account() {
         toast.error(error?.response?.data?.message || "Error");
       }
     })
+  }
+
+  const handleDeleteAccount = async () => {
+    apis.deleteAccount(user.id).then(res => {
+      if(res.code === 200) {
+        toast.success(res?.message || "Success");
+        removeSessionToken();
+        window?.localStorage.removeItem('__user__');
+        router.push('/register')
+        setShowModal(false);
+      }
+    }).catch(error => {
+      if (error?.response?.data?.message) {
+        toast.error(error?.response?.data?.message || "Error");
+      }
+    })
+   
   }
 
   return (
@@ -91,7 +114,7 @@ export default function Account() {
             <br />
             <input disabled {...register("fullName")} />
             <span className="checkBoxClass2">
-              <input {...register("oldPass")} disabled/>
+              <input {...register("oldPass")} disabled />
             </span>
             <br />
             Email Address: <span className="checkBoxClassB">New Password:</span>
@@ -144,13 +167,35 @@ export default function Account() {
             <br />
             <input type="checkbox" {...register("gym")} /> Gym
             <br />
-            <br />
             <span className="btnRank">
+              <br />
               <Button type="submit">Save Information</Button>
             </span>
+            <Button type="button" variant="danger" className=" mx-2" onClick={() => setShowModal(true)}>Delete Account</Button>
           </form>
         </Card.Body>
       </Card>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Are you sure you?
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Typography className='my-2'>
+            You are about to delete your account permanently, think one time!
+          </Typography>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleDeleteAccount}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
